@@ -1,0 +1,22 @@
+:host {
+  // flex-grow: 1;
+  // margin: 0.75rem;
+  cursor: auto;
+}
+
+.design-area {
+  height: 100%;
+  width: 100%;
+  border: 2px solid #dbdbdb;
+  border-radius: 0.75rem;
+  box-sizing: border-box;
+  &.no-drop {
+    border: 2px solid red;
+  }
+}
+
+.custom {
+  height: 900px;
+  width: 1000px;
+  background-color: green;
+}

@@ -1,0 +1,12 @@
+Client/.angular
+Client/.vscode
+Client/.nx
+node_modules
+Client/package-lock.json
+Client/package.json
+Client/README.md
+Client/tsconfig.doc.json
+Client/documentation
+Client/package-lock.json
+Client/package.json
+Client/README.md

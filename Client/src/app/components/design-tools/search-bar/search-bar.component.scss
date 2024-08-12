@@ -1,0 +1,31 @@
+.search-bar_container {
+  display: flex;
+  justify-content: space-between;
+  background-color: #f3edf7;
+  padding-left: 0;
+  padding-right: 0.25rem;
+  padding-top: 0;
+  padding-bottom: 0;
+  border: none;
+  border-radius: 0.5rem;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  box-sizing: border-box;
+
+  .plus-button {
+    inset: 0;
+    border: none;
+    border-radius: 12px;
+    background-color: #e8def8;
+    color: #1d192b;
+    height: 2.5rem;
+    width: 2.5rem;
+    font-size: 20px;
+
+    &:hover {
+      cursor: pointer;
+      background-color: #d8cee8;
+    }
+  }
+}

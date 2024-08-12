@@ -4,7 +4,7 @@ import { WebSocketService } from './websocket.service';
 
 @Injectable({ providedIn: 'root' })
 export class CRDTService<T extends { id: string }> {
-  document?: Map<string, T>;
+  document: Map<string, T>;
   docName: string = 'DesignDoc';
   isOnline = false;
   constructor(public websocketService: WebSocketService<T>, public storageService: StorageService<T>) {
@@ -14,9 +14,9 @@ export class CRDTService<T extends { id: string }> {
 
   insertItem(newItem: T) {
     this.document?.set(newItem.id, newItem);
-    if (this.document) {
-      this.storageService.persistDoc(this.document, this.docName);
-    }
+    // if (this.document) {
+    this.storageService.persistDoc(this.document, this.docName);
+    // }
   }
 
   updateItem(id: string, model: Partial<T>): T | void {
@@ -24,9 +24,9 @@ export class CRDTService<T extends { id: string }> {
     if (prevItem) {
       const newItem = { ...prevItem, ...model };
       this.document?.set(id, newItem);
-      if (this.document) {
-        this.storageService.persistDoc(this.document, this.docName);
-      }
+      // if (this.document) {
+      this.storageService.persistDoc(this.document, this.docName);
+      // }
       return newItem;
     }
     return;
@@ -34,9 +34,9 @@ export class CRDTService<T extends { id: string }> {
 
   deleteItem(id: string) {
     this.document?.delete(id);
-    if (this.document) {
-      this.storageService.persistDoc(this.document, this.docName);
-    }
+    // if (this.document) {
+    this.storageService.persistDoc(this.document, this.docName);
+    // }
   }
 
   insertAndShareItem(newItem: T) {
@@ -70,6 +70,7 @@ export class CRDTService<T extends { id: string }> {
     this.websocketService.connectionStatus$.subscribe((status: boolean) => {
       if (!this.isOnline && status) {
         this.websocketService.sendMessage({ type: 'new-client' });
+        this.shareFullDocument();
       }
       this.isOnline = status;
     })

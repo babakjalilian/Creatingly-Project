@@ -149,18 +149,18 @@ export class BaseAdjustableComponent implements OnInit, OnDestroy, OnChanges {
         var newTop = elementLastY + dy;
 
         // check to make sure the element will be within drag boundary
-        if (newLeft > dragBoundry.left && newLeft + elementDomRect.width < dragBoundry.right) {
+        if (newLeft >= dragBoundry.left && newLeft + elementDomRect.width <= dragBoundry.right) {
           this.domRect.x = this.domRect.left = newLeft;
         } else {
           // handling high mouse speed when dragging
-          this.domRect.x = this.domRect.left = newLeft < dragBoundry.left ? dragBoundry.left : dragBoundry.right - elementDomRect.width
+          this.domRect.x = this.domRect.left = newLeft <= dragBoundry.left ? dragBoundry.left : dragBoundry.right - elementDomRect.width
         }
 
-        if (newTop > dragBoundry.top && newTop + elementDomRect.height < dragBoundry.bottom) {
+        if (newTop >= dragBoundry.top && newTop + elementDomRect.height <= dragBoundry.bottom) {
           this.domRect.y = this.domRect.top = newTop;
         } else {
           // handling high mouse speed when dragging
-          this.domRect.y = this.domRect.top = newTop < dragBoundry.top ? dragBoundry.top : dragBoundry.bottom - elementDomRect.height
+          this.domRect.y = this.domRect.top = newTop <= dragBoundry.top ? dragBoundry.top : dragBoundry.bottom - elementDomRect.height;
         };
 
 

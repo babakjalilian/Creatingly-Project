@@ -1,6 +1,6 @@
 <div (drop)="drop($event)" (dragover)="$event.preventDefault()"
      class="design-area" id="designArea">
-  <app-design-panel>
+  <app-design-panel (drop)="$event.preventDefault();$event.stopPropagation()">
   </app-design-panel>
   <ng-container #vcr></ng-container>
 

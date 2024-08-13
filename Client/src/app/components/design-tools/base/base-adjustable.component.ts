@@ -132,8 +132,8 @@ export class BaseAdjustableComponent implements OnInit, OnDestroy, OnChanges {
 
     dragStart$.subscribe((event: MouseEvent) => {
       this.element.classList.add('dragging');
-      event.stopPropagation();
-      event.preventDefault();
+      // event.stopPropagation();
+      // event.preventDefault();
       const mouseX = event.clientX;
       const mouseY = event.clientY;
       const elementLastX = this.domRect.x;

@@ -5,6 +5,7 @@ import { DomRectModel } from "../models/dom-rect.model";
 import { Message, SharedDataModel } from "../models/shared-data.model";
 import { Utility } from "../utilities/utility";
 import { CRDTService } from "./crdt.service";
+import { ButtonComponent } from "../components/design-tools/button/button.component";
 
 
 @Injectable({ providedIn: 'root' })
@@ -15,15 +16,7 @@ export class DomGeneratorService {
   webSocketSubscription: Subscription = new Subscription();
 
   constructor(private crdtService: CRDTService<SharedDataModel>) {
-    this.webSocketSubscription = crdtService.websocketService.messages$.subscribe((message: Message<SharedDataModel>) => {
-      if (message.type === 'add' || message.type === 'update') {
-        this.renderComponent(message.payload.id, message.payload);
-      } else if (message.type === 'remove') {
-        this.deleteComponent(message.payload.id);
-      } else if (message.type === 'new-client') {
-        this.crdtService.shareFullDocument();
-      }
-    });
+    this.connectWebsocket();
   }
 
   setRootViewContainer(viewContainerRef: ViewContainerRef) {
@@ -46,8 +39,17 @@ export class DomGeneratorService {
         let domRectSubscription = (componentref.instance as BaseAdjustableComponent).domRectChanged$.pipe(
           // debounce(() => interval(50))
         ).subscribe((event: DomRectModel) => {
-          this.crdtService.updateAndShareItem(key, { domRect: event });
+          this.crdtService.updateAndShareItem(key, item.itemType, { domRect: event });
         });
+
+        let labelSubscription: Subscription;
+        let labelChanged = (componentref.instance as ButtonComponent).labelChanged$;
+        if (labelChanged) {
+          labelSubscription = labelChanged.pipe(
+          ).subscribe((label: string) => {
+            this.crdtService.updateAndShareItem(key, item.itemType, { label: label });
+          });
+        }
 
         let itemRemoveSubscription = (componentref.instance as BaseAdjustableComponent).itemRemoved$
           .subscribe(() => {
@@ -61,6 +63,7 @@ export class DomGeneratorService {
         componentref.onDestroy(() => {
           domRectSubscription.unsubscribe();
           itemRemoveSubscription.unsubscribe();
+          labelSubscription?.unsubscribe();
         });
         if (isRemote) {
           this.crdtService.insertItem(item);
@@ -89,8 +92,21 @@ export class DomGeneratorService {
     }
   }
 
+  connectWebsocket() {
+    this.webSocketSubscription = this.crdtService.websocketService.messages.subscribe((message: Message<SharedDataModel>) => {
+      if (message.type === 'add' || message.type === 'update') {
+        this.renderComponent(message.payload.id, message.payload);
+      } else if (message.type === 'remove') {
+        this.deleteComponent(message.payload.id);
+      } else if (message.type === 'new-client') {
+        this.crdtService.shareFullDocument();
+      }
+    });
+  }
+
   closWebSocket() {
     this.crdtService.close();
+    this.webSocketSubscription.unsubscribe();
   }
 
 }

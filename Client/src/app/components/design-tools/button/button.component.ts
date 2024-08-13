@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { BaseAdjustableComponent } from '../base/base-adjustable.component';
 
 @Component({
@@ -9,5 +9,13 @@ import { BaseAdjustableComponent } from '../base/base-adjustable.component';
   imports: [BaseAdjustableComponent],
 })
 export class ButtonComponent extends BaseAdjustableComponent {
+
+  @Input('label') label = 'label';
+  @Output() labelChanged$: EventEmitter<string> = new EventEmitter();
+
+  changeLabel(event: Event) {
+    this.label = (event.target as HTMLButtonElement)?.textContent || '';
+    this.labelChanged$.emit(this.label)
+  }
 
 }

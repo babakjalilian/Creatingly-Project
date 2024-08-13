@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, EMPTY, Observable } from 'rxjs';
+import { BehaviorSubject, EMPTY, Observable, Subject } from 'rxjs';
 import { catchError, retry, tap } from 'rxjs/operators';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { environment } from '../../environments/environment';
@@ -11,24 +11,16 @@ import { Message } from '../models/shared-data.model';
 })
 export class WebSocketService<T> {
 
-  private webSocket$?: WebSocketSubject<Message<T>>;
-  public messages$: Observable<Message<T>> = new Observable();
+  private messages$: Subject<Message<T>> = new Subject<Message<T>>();
+  public messages: Observable<Message<T>> = this.messages$.asObservable();
   public connectionStatus$ = new BehaviorSubject<boolean>(false);
+  private webSocketSubject?: WebSocketSubject<Message<T>>;
 
   public connect(): void {
-    if (!this.webSocket$ || this.webSocket$.closed) {
-      this.webSocket$ = this.getWebSocketConnection();
+    if (this.webSocketSubject) {
+      this.webSocketSubject.unsubscribe();
     }
-    this.messages$ = this.webSocket$.pipe(
-      retry({ count: 10, delay: environment.reconnectInterval }),
-      tap({ error: error => console.log('Websocket connection failed', error) }),
-      catchError(() => EMPTY),
-    );
-  }
-
-
-  private getWebSocketConnection(): WebSocketSubject<Message<T>> {
-    return webSocket({
+    this.webSocketSubject = webSocket({
       url: environment.wsServerUrl,
       openObserver: {
         next: () => {
@@ -39,16 +31,23 @@ export class WebSocketService<T> {
         next: () => {
           this.connectionStatus$.next(false);
         }
-      }
+      },
+    });
 
-    })
+    this.webSocketSubject.pipe(
+      retry({ count: 10, delay: environment.reconnectInterval }),
+      tap({ error: error => console.log('Websocket connection failed', error) }),
+      catchError(() => EMPTY),
+    ).subscribe(message => {
+      this.messages$.next(message)
+    });
   }
 
   sendMessage(message: Message<T>): void {
-    this.webSocket$?.next(message);
+    this.webSocketSubject?.next(message);
   }
 
-  close() {
-    this.webSocket$?.complete();
+  disconnect() {
+    this.webSocketSubject?.unsubscribe();
   }
 }

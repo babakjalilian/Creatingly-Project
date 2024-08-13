@@ -1,10 +1,22 @@
+import { Optional } from "@angular/core";
 import { DomRectModel } from "./dom-rect.model";
 
-export interface SharedDataModel {
+export interface BaseItemDataModel {
   id: string;
   itemType: string;
-  domRect?: DomRectModel;
+
 }
+export interface AdditionalPropertiesDataModel {
+  domRect: DomRectModel;
+  [key: string]: any;
+}
+export type SharedDataModel = BaseItemDataModel & Partial<AdditionalPropertiesDataModel>
+//  {
+//   id: string;
+//   itemType: string;
+//   domRect?: DomRectModel;
+//   [key: string]: any;
+// }
 
 export interface AddMessage<T> {
   type: 'add',
@@ -13,7 +25,7 @@ export interface AddMessage<T> {
 
 export interface UpdateMessage<T> {
   type: 'update',
-  payload: T
+  payload: Partial<T> & BaseItemDataModel
 }
 
 export interface RemoveMessage<T> {

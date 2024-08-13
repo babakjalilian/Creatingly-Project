@@ -1,7 +1,12 @@
 <div class="design_panel_container">
   <div class="design_panel_header">
     Creatingly
-    <button class="btn-outline-success" (click)="changeStatus()">{{status}}</button>
+    <button
+            class="btn-outline"
+            [ngClass]="{'btn-success': status==='Connected',
+                        'btn-warning':status==='Pending',
+                        'btn-danger':status==='Disconnected'}"
+            (click)="changeStatus()">{{status}}</button>
   </div>
   <img class="design_element"
        src="search-bar.png"

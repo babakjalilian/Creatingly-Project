@@ -2,13 +2,14 @@ import { Component } from '@angular/core';
 import { DraggableDirective } from '../../../directives/draggable.directive';
 import { SharedDataModel } from '../../../models/shared-data.model';
 import { WebSocketService } from '../../../services/websocket.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-design-panel',
   standalone: true,
-  imports: [DraggableDirective],
+  imports: [DraggableDirective, CommonModule],
   templateUrl: './design-panel.component.html',
-  styleUrl: './design-panel.component.scss'
+  styleUrl: './design-panel.component.scss',
 })
 export class DesignPanelComponent {
 

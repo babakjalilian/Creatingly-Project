@@ -38,7 +38,7 @@
   width: 17.5rem;
 }
 
-.btn-outline-success {
+.btn-outline {
   display: inline-block;
   font-weight: 400;
   text-align: center;
@@ -50,11 +50,22 @@
   font-size: 0.75rem;
   line-height: 1.5;
   border-radius: 1rem;
-
-  color: #28a745;
   background-color: transparent;
   background-image: none;
-  border-color: #28a745;
-
   cursor: pointer;
+
+  &.btn-success {
+    color: #28a745;
+    border-color: #28a745;
+  }
+
+  &.btn-warning {
+    color: #ffc107;
+    border-color: #ffc107;
+  }
+
+  &.btn-danger {
+    color: #dc3545;
+    border-color: #dc3545;
+  }
 }

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { BaseAdjustableComponent } from '../base/base-adjustable.component';
 
 @Component({
@@ -10,4 +10,11 @@ import { BaseAdjustableComponent } from '../base/base-adjustable.component';
 })
 export class TextFieldComponent extends BaseAdjustableComponent {
 
+  @Input('value') value = 'value';
+  @Output() valueChanged$: EventEmitter<string> = new EventEmitter();
+
+  changeValue(event: Event) {
+    this.value = (event.target as HTMLButtonElement)?.value || '';
+    this.valueChanged$.emit(this.value)
+  }
 }

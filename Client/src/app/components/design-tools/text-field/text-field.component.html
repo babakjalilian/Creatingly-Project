@@ -1,4 +1,8 @@
 <div class="input-container">
   <label for="custom-input">Label</label>
-  <input id="custom-input" type="text" value="Value">
+  <input id="custom-input"
+         class="form-input"
+         type="text"
+         [value]="value"
+         (input)="changeValue($event)">
 </div>

@@ -9,7 +9,7 @@
   padding-bottom: 0px;
 
   label,
-  input {
+  input.form-input {
     font-family: "Inter", sans-serif;
     font-weight: 400;
     font-style: normal;
@@ -21,17 +21,22 @@
     line-height: 200%;
   }
 
-  input {
+  input.form-input {
     line-height: 100%;
     padding-left: 16px;
     padding-right: 16px;
-    padding-top: 6px;
-    padding-bottom: 6px;
+    padding-top: 4px;
+    padding-bottom: 4px;
     border-radius: 8px;
     background-color: #ffffff;
     border: 2px solid #d9d9d9;
     color: #1e1e1e;
     box-sizing: border-box;
     flex-grow: 1;
+    outline: none;
+
+    &:focus {
+      border: 0.25rem solid #0d6efd40;
+    }
   }
 }

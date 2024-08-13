@@ -6,6 +6,7 @@ import { Message, SharedDataModel } from "../models/shared-data.model";
 import { Utility } from "../utilities/utility";
 import { CRDTService } from "./crdt.service";
 import { ButtonComponent } from "../components/design-tools/button/button.component";
+import { TextFieldComponent } from "../components/design-tools/text-field/text-field.component";
 
 
 @Injectable({ providedIn: 'root' })
@@ -21,6 +22,11 @@ export class DomGeneratorService {
 
   setRootViewContainer(viewContainerRef: ViewContainerRef) {
     this.rootViewContainer = viewContainerRef;
+    this.retriveSession();
+  }
+
+  retriveSession() {
+    // Retrive session from local storage when user is offline
     if (this.crdtService.document) {
       this.crdtService.document.forEach((item: SharedDataModel, key: string) => {
         this.renderComponent(key, item);
@@ -42,15 +48,6 @@ export class DomGeneratorService {
           this.crdtService.updateAndShareItem(key, item.itemType, { domRect: event });
         });
 
-        let labelSubscription: Subscription;
-        let labelChanged = (componentref.instance as ButtonComponent).labelChanged$;
-        if (labelChanged) {
-          labelSubscription = labelChanged.pipe(
-          ).subscribe((label: string) => {
-            this.crdtService.updateAndShareItem(key, item.itemType, { label: label });
-          });
-        }
-
         let itemRemoveSubscription = (componentref.instance as BaseAdjustableComponent).itemRemoved$
           .subscribe(() => {
             if (this.components.get(key)) {
@@ -60,10 +57,25 @@ export class DomGeneratorService {
             }
           });
 
+        let labelChangedSubscription: Subscription;
+        if (componentref.componentType === ButtonComponent) {
+          labelChangedSubscription = (componentref.instance as ButtonComponent).labelChanged$.subscribe((label: string) => {
+            this.crdtService.updateAndShareItem(key, item.itemType, { label: label });
+          });
+        }
+
+        let valueChangedSubscription: Subscription;
+        if (componentref.componentType === TextFieldComponent) {
+          valueChangedSubscription = (componentref.instance as TextFieldComponent).valueChanged$.subscribe((value: string) => {
+            this.crdtService.updateAndShareItem(key, item.itemType, { value: value });
+          });
+        }
+
         componentref.onDestroy(() => {
           domRectSubscription.unsubscribe();
           itemRemoveSubscription.unsubscribe();
-          labelSubscription?.unsubscribe();
+          labelChangedSubscription?.unsubscribe();
+          valueChangedSubscription?.unsubscribe();
         });
         if (isRemote) {
           this.crdtService.insertItem(item);

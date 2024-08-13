@@ -1,9 +1,7 @@
-import { Observable, Subject, Subscription, tap } from 'rxjs';
+import { Observable, Subscription, tap } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { StorageService } from './storage.service';
 import { WebSocketService } from './websocket.service';
-import { BehaviorSubject } from 'rxjs';
-import { Message } from '../models/shared-data.model';
 
 @Injectable({ providedIn: 'root' })
 export class CRDTService<T extends { id: string }> {
@@ -11,26 +9,23 @@ export class CRDTService<T extends { id: string }> {
   docName: string = 'DesignDoc';
   isOnline = false;
   connectionSubscription: Subscription = new Subscription();
-  connectionStatus$: Observable<boolean>;
+  // connectionStatus$: Observable<boolean>;
   constructor(public websocketService: WebSocketService<T>, public storageService: StorageService<T>) {
     this.document = new Map(this.storageService.loadDoc(this.docName).entries());
-    this.connectionStatus$ = this.websocketService.connectionStatus$.pipe(
-      tap(status => {
-        this.isOnline = status;
-        if (status) {
-          this.websocketService.sendMessage({ type: 'new-client' });
-          this.shareFullDocument();
-        }
-      })
+    this.websocketService.connectionStatus$.subscribe(status => {
+      this.isOnline = status;
+      if (status) {
+        this.websocketService.sendMessage({ type: 'new-client' });
+        this.shareFullDocument();
+      }
+    }
     );
     this.open();
   }
 
   insertItem(newItem: T) {
     this.document?.set(newItem.id, newItem);
-    // if (this.document) {
     this.storageService.persistDoc(this.document, this.docName);
-    // }
   }
 
   updateItem(id: string, model: Partial<T>): T | void {
@@ -38,9 +33,7 @@ export class CRDTService<T extends { id: string }> {
     if (prevItem) {
       const newItem = { ...prevItem, ...model };
       this.document?.set(id, newItem);
-      // if (this.document) {
       this.storageService.persistDoc(this.document, this.docName);
-      // }
       return newItem;
     }
     return;
@@ -48,9 +41,7 @@ export class CRDTService<T extends { id: string }> {
 
   deleteItem(id: string) {
     this.document?.delete(id);
-    // if (this.document) {
     this.storageService.persistDoc(this.document, this.docName);
-    // }
   }
 
   insertAndShareItem(newItem: T) {
@@ -70,9 +61,9 @@ export class CRDTService<T extends { id: string }> {
     this.websocketService.sendMessage({ type: 'remove', payload: { id: id } as T });
   }
 
-  clear() {
-    this.document?.clear();
-  }
+  // clear() {
+  //   this.document?.clear();
+  // }
 
   close() {
     this.websocketService.disconnect();

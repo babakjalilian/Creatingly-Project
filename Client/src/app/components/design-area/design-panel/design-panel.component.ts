@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { DraggableDirective } from '../../../directives/draggable.directive';
-import { CRDTService } from '../../../services/crdt.service';
 import { SharedDataModel } from '../../../models/shared-data.model';
+import { WebSocketService } from '../../../services/websocket.service';
 
 @Component({
   selector: 'app-design-panel',
@@ -15,20 +15,19 @@ export class DesignPanelComponent {
   status: 'Connected' | 'Pending' | 'Disconnected' = 'Pending';
 
 
-  constructor(private crdtService: CRDTService<SharedDataModel>) {
-    this.crdtService.connectionStatus$.subscribe(isOnline => {
+  constructor(private websocketService: WebSocketService<SharedDataModel>) {
+    this.websocketService.connectionStatus$.subscribe(isOnline => {
       this.status = isOnline ? 'Connected' : 'Disconnected';
-
     })
   }
 
 
   changeStatus() {
     if (this.status === 'Connected') {
-      this.crdtService.close();
+      this.websocketService.disconnect();
     } else if (this.status === 'Disconnected') {
       this.status = 'Pending';
-      this.crdtService.open();
+      this.websocketService.connect();
     }
   }
 

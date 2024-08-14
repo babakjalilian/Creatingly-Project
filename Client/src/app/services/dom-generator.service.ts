@@ -41,7 +41,7 @@ export class DomGeneratorService implements OnDestroy {
     }
   }
 
-  renderComponent(key: string, item: any, isRemote = true): void {
+  renderComponent(key: string, item: SharedDataModel, isRemote = true): void {
     if (this.rootViewContainer) {
       let componentRef = this.components.get(key)
       if (!componentRef) {

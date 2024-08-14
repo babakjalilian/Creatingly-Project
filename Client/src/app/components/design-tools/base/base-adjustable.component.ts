@@ -25,7 +25,7 @@ export class BaseAdjustableComponent implements OnInit, OnDestroy, OnChanges {
   constructor(
     private elementRef: ElementRef,
     private renderer: Renderer2,
-    @Inject(DOCUMENT) private document: any
+    @Inject(DOCUMENT) private document: Document
   ) {
 
   }

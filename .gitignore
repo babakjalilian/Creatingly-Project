@@ -1,7 +1,9 @@
 Client/.angular
 Client/.vscode
 Client/.nx
-node_modules
+Client/dist
+Client/node_modules
+Server/node_modules
 Client/package-lock.json
 Client/tsconfig.doc.json
 Client/documentation

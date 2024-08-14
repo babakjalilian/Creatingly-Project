@@ -1,16 +1,15 @@
-import { Optional } from "@angular/core";
 import { DomRectModel } from "./dom-rect.model";
 
-export interface BaseItemDataModel {
+export interface IRequiredItemData {
   id: string;
   itemType: string;
 
 }
-export interface AdditionalPropertiesDataModel {
+export interface IOptionalItemData {
   domRect: DomRectModel;
   [key: string]: any;
 }
-export type SharedDataModel = BaseItemDataModel & Partial<AdditionalPropertiesDataModel>
+export type SharedDataModel = IRequiredItemData & Partial<IOptionalItemData>
 //  {
 //   id: string;
 //   itemType: string;
@@ -18,24 +17,24 @@ export type SharedDataModel = BaseItemDataModel & Partial<AdditionalPropertiesDa
 //   [key: string]: any;
 // }
 
-export interface AddMessage<T> {
+export interface IAddMessage<T> {
   type: 'add',
   payload: T
 }
 
-export interface UpdateMessage<T> {
+export interface IUpdateMessage<T> {
   type: 'update',
-  payload: Partial<T> & BaseItemDataModel
+  payload: Partial<T> & IRequiredItemData
 }
 
-export interface RemoveMessage<T> {
+export interface IRemoveMessage<T> {
   type: 'remove',
   payload: T;
 }
 
-export interface AliveMessage {
-  type: 'new-client',
+export interface INewClientMessage {
+  type: 'new-client'
 }
 
-export type Message<T> = AddMessage<T> | UpdateMessage<T> | RemoveMessage<T> | AliveMessage;
+export type Message<T> = IAddMessage<T> | IUpdateMessage<T> | IRemoveMessage<T> | INewClientMessage;
 

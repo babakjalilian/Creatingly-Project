@@ -2,6 +2,7 @@ import { DOCUMENT } from "@angular/common";
 import { Component, ElementRef, EventEmitter, Inject, Input, OnChanges, OnDestroy, OnInit, Output, Renderer2, SimpleChanges } from "@angular/core";
 import { fromEvent, Subject, takeUntil } from "rxjs";
 import { DomRectModel } from "../../../models/dom-rect.model";
+import { IDragBoundary } from "../../../models/drag-boundary.model.";
 import { ResizeAnchorType } from "../../../models/resize-anchor.type";
 
 
@@ -15,17 +16,19 @@ export class BaseAdjustableComponent implements OnInit, OnDestroy, OnChanges {
   private removeHandlerElement!: HTMLElement;
   private destroy$: Subject<void> = new Subject();
 
-  @Input('reject') reject: boolean = false;
   @Input() id!: string;
   @Input() domRect!: DomRectModel
+  @Input() reject: boolean = false;
+  @Output() removed$: EventEmitter<void> = new EventEmitter<void>();
   @Output() domRectChanged$: EventEmitter<DomRectModel> = new EventEmitter<DomRectModel>();
-  @Output() itemRemoved$: EventEmitter<void> = new EventEmitter<void>();
 
   constructor(
     private elementRef: ElementRef,
     private renderer: Renderer2,
     @Inject(DOCUMENT) private document: any
-  ) { }
+  ) {
+
+  }
 
   ngOnInit(): void {
     if (!this.reject) {
@@ -40,7 +43,7 @@ export class BaseAdjustableComponent implements OnInit, OnDestroy, OnChanges {
     this.createHandlers();
   }
 
-  createHandlers() {
+  createHandlers(): void {
     if (!this.reject) {
       (this.elementRef.nativeElement as HTMLElement).classList.add('resizable')
       this.createResizers('top-left');
@@ -54,7 +57,7 @@ export class BaseAdjustableComponent implements OnInit, OnDestroy, OnChanges {
     }
   }
 
-  createResizers(className: ResizeAnchorType): any {
+  createResizers(className: ResizeAnchorType): void {
     const resizerElement = this.renderer.createElement('div');
     this.renderer.addClass(resizerElement, `resizer`);
     this.renderer.addClass(resizerElement, className);
@@ -179,7 +182,7 @@ export class BaseAdjustableComponent implements OnInit, OnDestroy, OnChanges {
     });
   }
 
-  getDragBoundry() {
+  getDragBoundry(): IDragBoundary {
     let boundry = document.getElementById('designArea')?.getBoundingClientRect() || {
       top: 0,
       left: 0,
@@ -194,20 +197,20 @@ export class BaseAdjustableComponent implements OnInit, OnDestroy, OnChanges {
     }
   }
 
-  addRemoveHandler() {
+  addRemoveHandler(): void {
     this.removeHandlerElement = this.renderer.createElement('div');
     this.renderer.addClass(this.removeHandlerElement, 'remove-handler');
     const removeIconElement = this.renderer.createElement('i');
     this.renderer.addClass(removeIconElement, 'delete-icon');
     fromEvent<MouseEvent>(this.removeHandlerElement, "click").pipe(takeUntil(this.destroy$)).subscribe((e: MouseEvent) => {
       e.stopPropagation();
-      this.itemRemoved$.emit();
+      this.removed$.emit();
     });
     this.renderer.appendChild(this.removeHandlerElement, removeIconElement);
     this.renderer.appendChild(this.element, this.removeHandlerElement);
   }
 
-  setDimension() {
+  setDimension(): void {
     if (this.domRect) {
       this.renderer.setStyle(this.elementRef.nativeElement, 'height', this.domRect.height + "px");
       this.renderer.setStyle(this.elementRef.nativeElement, 'width', this.domRect.width + "px");
@@ -220,9 +223,10 @@ export class BaseAdjustableComponent implements OnInit, OnDestroy, OnChanges {
 
   ngOnDestroy(): void {
     this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges(changes: SimpleChanges): void {
     if (changes && changes['domRect'])
       this.setDimension();
   }

@@ -7,7 +7,6 @@ import { BaseAdjustableComponent } from '../base/base-adjustable.component';
   templateUrl: './search-bar.component.html',
   styleUrl: './search-bar.component.scss',
   imports: [BaseAdjustableComponent],
-  // providers: [ComponentLoaderService]
 })
 export class SearchBarComponent extends BaseAdjustableComponent {
 

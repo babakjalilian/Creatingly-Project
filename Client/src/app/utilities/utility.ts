@@ -1,6 +1,6 @@
 import { Type } from "@angular/core";
-import { SearchBarComponent } from "../components/design-tools/search-bar/search-bar.component";
 import { ButtonComponent } from "../components/design-tools/button/button.component";
+import { SearchBarComponent } from "../components/design-tools/search-bar/search-bar.component";
 import { TextFieldComponent } from "../components/design-tools/text-field/text-field.component";
 import { TopBarComponent } from "../components/design-tools/top-bar/top-bar.component";
 

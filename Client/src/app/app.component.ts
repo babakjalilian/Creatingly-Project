@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { DesignPanelComponent } from './components/design-area/design-panel/design-panel.component';
+import { DesignPanelComponent } from './components/design-panel/design-panel.component';
 import { DesignAreaComponent } from './components/design-area/design-area.component';
 
 @Component({

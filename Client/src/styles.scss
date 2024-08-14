@@ -6,21 +6,17 @@ body {
   overflow: hidden;
 }
 
-.drop-zone.drag-over {
-  border: 2px solid blue;
-}
-
 .draggable {
   cursor: move;
   position: absolute;
   z-index: 1;
   transition: box-shadow 200ms cubic-bezier(0, 0, 0.2, 1);
+  border-radius: 8px;
   &:hover {
     box-shadow:
       0 4px 4px -4px rgba(0, 0, 0, 0.2),
       0 7px 9px 0px rgba(0, 0, 0, 0.14),
       0 2px 13px 1px rgba(0, 0, 0, 0.12);
-    border-radius: 8px;
   }
 
   &.dragging {
@@ -102,40 +98,30 @@ body {
 }
 
 .remove-handler {
+  display: none;
   position: absolute;
+  cursor: pointer;
   top: 0.25rem;
   right: 0.25rem;
-  cursor: pointer;
-  width: 24px;
-  height: 24px;
   border-radius: 8px;
   color: red;
   background-color: #b0a8a882;
-  display: none;
 
-  .delete-icon {
-    width: 24px;
-    height: 24px;
+  .delete-icon::before {
     display: block;
-    &::before {
-      content: "\01F5D1";
-      padding-left: 2px;
-      font-style: normal;
-      font-weight: bold;
-      font-size: 24px;
-      line-height: 24px;
-      display: block;
-      width: 22px;
-      text-align: center;
-    }
+    text-align: center;
+    content: "\01F5D1";
+    width: 22px;
+    padding-left: 2px;
+    line-height: 24px;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: bold;
   }
 }
 
-.no-drop {
-  cursor: no-drop !important;
-}
-
 .design-area {
+  cursor: auto;
   .draggable:hover {
     .remove-handler {
       display: block;

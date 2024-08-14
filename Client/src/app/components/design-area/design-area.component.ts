@@ -1,19 +1,20 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild, ViewContainerRef } from '@angular/core';
-import { BaseAdjustableComponent } from '../design-tools/base/base-adjustable.component';
+import { AfterViewInit, Component, ElementRef, ViewChild, ViewContainerRef } from '@angular/core';
 import { DomRectModel } from '../../models/dom-rect.model';
 import { SharedDataModel } from '../../models/shared-data.model';
-import { Utility } from '../../utilities/utility';
 import { DomGeneratorService } from '../../services/dom-generator.service';
-import { DesignPanelComponent } from './design-panel/design-panel.component';
+import { Utility } from '../../utilities/utility';
+import { BaseAdjustableComponent } from '../design-tools/base/base-adjustable.component';
+import { DesignPanelComponent } from '../design-panel/design-panel.component';
 
 @Component({
   selector: 'app-design-area',
   standalone: true,
   templateUrl: './design-area.component.html',
   styleUrl: './design-area.component.scss',
-  imports: [BaseAdjustableComponent, DesignPanelComponent]
+  imports: [BaseAdjustableComponent, DesignPanelComponent],
+  providers: [DomGeneratorService]
 })
-export class DesignAreaComponent implements AfterViewInit, OnDestroy {
+export class DesignAreaComponent implements AfterViewInit {
 
   @ViewChild("vcr", { read: ViewContainerRef }) vcr?: ViewContainerRef;
 
@@ -27,8 +28,7 @@ export class DesignAreaComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-
-  drop(event: DragEvent) {
+  drop(event: DragEvent): void {
     event.preventDefault();
     (event.target as HTMLElement)?.classList.remove("drag-over");
     let boundry = this.elementRef.nativeElement.getBoundingClientRect() || {
@@ -58,10 +58,6 @@ export class DesignAreaComponent implements AfterViewInit, OnDestroy {
         this.domGeneratorService.renderComponent(newItem.id, newItem, false);
       }
     }
-  }
-
-  ngOnDestroy(): void {
-    this.domGeneratorService.closWebSocket();
   }
 
 }

@@ -1,124 +1,144 @@
-import { ComponentRef, EnvironmentInjector, inject, Injectable, reflectComponentType, ViewContainerRef } from "@angular/core";
+import { ComponentRef, EnvironmentInjector, inject, Injectable, OnDestroy, reflectComponentType, ViewContainerRef } from "@angular/core";
 import { Subscription } from "rxjs";
 import { BaseAdjustableComponent } from "../components/design-tools/base/base-adjustable.component";
+import { ButtonComponent } from "../components/design-tools/button/button.component";
+import { TextFieldComponent } from "../components/design-tools/text-field/text-field.component";
 import { DomRectModel } from "../models/dom-rect.model";
 import { Message, SharedDataModel } from "../models/shared-data.model";
 import { Utility } from "../utilities/utility";
-import { CRDTService } from "./crdt.service";
-import { ButtonComponent } from "../components/design-tools/button/button.component";
-import { TextFieldComponent } from "../components/design-tools/text-field/text-field.component";
+import { CollaborationService } from "./collaboration.service";
 
 
-@Injectable({ providedIn: 'root' })
-export class DomGeneratorService {
+@Injectable()
+export class DomGeneratorService implements OnDestroy {
   rootViewContainer?: ViewContainerRef;
   envInjector = inject(EnvironmentInjector);
   components: Map<string, ComponentRef<unknown>> = new Map<string, ComponentRef<unknown>>;
   webSocketSubscription: Subscription = new Subscription();
+  connectionStatusSubscription: Subscription = new Subscription();
 
-  constructor(private crdtService: CRDTService<SharedDataModel>) {
+
+  constructor(private collaborationService: CollaborationService<SharedDataModel>) {
     this.connectWebsocket();
+    this.connectionStatusSubscription = collaborationService.connectionStatus$.subscribe(status => {
+      if (status) {
+        this.resetView();
+      }
+    })
   }
 
-  setRootViewContainer(viewContainerRef: ViewContainerRef) {
+  setRootViewContainer(viewContainerRef: ViewContainerRef): void {
     this.rootViewContainer = viewContainerRef;
     this.retriveSession();
   }
 
-  retriveSession() {
+  retriveSession(): void {
     // Retrive session from local storage when user is offline
-    if (this.crdtService.document) {
-      this.crdtService.document.forEach((item: SharedDataModel, key: string) => {
+    if (this.collaborationService.document) {
+      this.collaborationService.document.forEach((item: SharedDataModel, key: string) => {
         this.renderComponent(key, item);
       });
     }
   }
 
-  renderComponent(key: string, item: any, isRemote = true) {
+  renderComponent(key: string, item: any, isRemote = true): void {
     if (this.rootViewContainer) {
-      let componentref = this.components.get(key)
-      if (!componentref) {
-        componentref = this.rootViewContainer.createComponent(Utility.componentTypeResolver(item.itemType), {
+      let componentRef = this.components.get(key)
+      if (!componentRef) {
+        componentRef = this.rootViewContainer.createComponent(Utility.componentTypeResolver(item.itemType), {
           environmentInjector: this.envInjector,
         });
 
-        let domRectSubscription = (componentref.instance as BaseAdjustableComponent).domRectChanged$.pipe(
+        let domRectSubscription = (componentRef.instance as BaseAdjustableComponent).domRectChanged$.pipe(
           // debounce(() => interval(50))
         ).subscribe((event: DomRectModel) => {
-          this.crdtService.updateAndShareItem(key, item.itemType, { domRect: event });
+          this.collaborationService.updateAndShareItem(key, item.itemType, { domRect: event });
         });
 
-        let itemRemoveSubscription = (componentref.instance as BaseAdjustableComponent).itemRemoved$
+        let itemRemoveSubscription = (componentRef.instance as BaseAdjustableComponent).removed$
           .subscribe(() => {
             if (this.components.get(key)) {
               this.components.get(key)?.destroy();
               this.components.delete(key);
-              this.crdtService.deleteAndShareItem(key);
+              this.collaborationService.deleteAndShareItem(key);
             }
           });
 
         let labelChangedSubscription: Subscription;
-        if (componentref.componentType === ButtonComponent) {
-          labelChangedSubscription = (componentref.instance as ButtonComponent).labelChanged$.subscribe((label: string) => {
-            this.crdtService.updateAndShareItem(key, item.itemType, { label: label });
+        if (componentRef.componentType === ButtonComponent) {
+          labelChangedSubscription = (componentRef.instance as ButtonComponent).labelChanged$.subscribe((label: string) => {
+            this.collaborationService.updateAndShareItem(key, item.itemType, { label: label });
           });
         }
 
         let valueChangedSubscription: Subscription;
-        if (componentref.componentType === TextFieldComponent) {
-          valueChangedSubscription = (componentref.instance as TextFieldComponent).valueChanged$.subscribe((value: string) => {
-            this.crdtService.updateAndShareItem(key, item.itemType, { value: value });
+        if (componentRef.componentType === TextFieldComponent) {
+          valueChangedSubscription = (componentRef.instance as TextFieldComponent).valueChanged$.subscribe((value: string) => {
+            this.collaborationService.updateAndShareItem(key, item.itemType, { value: value });
           });
         }
 
-        componentref.onDestroy(() => {
+        // let componentMetaData = reflectComponentType(componentRef.componentType);
+        componentRef.onDestroy(() => {
+          // componentMetaData?.outputs.forEach(emitter => {
+          //   (componentRef?.instance as any)[emitter.propName].unsubscribe();
+          // })
           domRectSubscription.unsubscribe();
           itemRemoveSubscription.unsubscribe();
           labelChangedSubscription?.unsubscribe();
           valueChangedSubscription?.unsubscribe();
         });
         if (isRemote) {
-          this.crdtService.insertItem(item);
+          this.collaborationService.insertItem(item);
         } else {
-          this.crdtService.insertAndShareItem(item)
+          this.collaborationService.insertAndShareItem(item)
         }
       } else {
-        this.crdtService.updateItem(key, item);
+        this.collaborationService.updateItem(key, item);
       }
 
       Object.entries(item).forEach(([key, value]) => {
-        let componentMetaData = reflectComponentType(componentref.componentType);
+        let componentMetaData = reflectComponentType(componentRef.componentType);
         if (componentMetaData && componentMetaData?.inputs.findIndex(item => item.propName === key) > -1) {
-          componentref.setInput(key, value);
+          componentRef.setInput(key, value);
         }
       });
-      this.components.set(key, componentref);
+      this.components.set(key, componentRef);
     }
   }
 
-  deleteComponent(key: string) {
+  deleteComponent(key: string): void {
     if (this.components.get(key)) {
       this.components.get(key)?.destroy();
       this.components.delete(key);
-      this.crdtService.deleteItem(key);
+      this.collaborationService.deleteItem(key);
     }
   }
 
-  connectWebsocket() {
-    this.webSocketSubscription = this.crdtService.websocketService.messages.subscribe((message: Message<SharedDataModel>) => {
+  resetView(): void {
+    if (this.collaborationService.document) {
+      this.rootViewContainer?.clear();
+      this.components.clear();
+      this.collaborationService.clear();
+    }
+  }
+
+  connectWebsocket(): void {
+    this.webSocketSubscription = this.collaborationService.websocketService.messages.subscribe((message: Message<SharedDataModel>) => {
       if (message.type === 'add' || message.type === 'update') {
         this.renderComponent(message.payload.id, message.payload);
       } else if (message.type === 'remove') {
         this.deleteComponent(message.payload.id);
       } else if (message.type === 'new-client') {
-        this.crdtService.shareFullDocument();
+        this.collaborationService.shareFullDocument();
       }
     });
   }
 
-  closWebSocket() {
-    this.crdtService.close();
-    this.webSocketSubscription.unsubscribe();
+  ngOnDestroy(): void {
+    this.collaborationService.closeWebsocket();
+    this.webSocketSubscription.unsubscribe(); // ?
+    this.connectionStatusSubscription.unsubscribe();
   }
 
 }
